@@ -11,5 +11,5 @@
 |
 */
 
-$app->get('/getAdConf', 'AdConfController@getAdConf');
-$app->post('/getAdConf', 'AdConfController@getAdConf');
+$app->get('/getAdinfo', 'AdConfController@getAdinfo');
+$app->post('/getAdinfo', 'AdConfController@getAdinfo');

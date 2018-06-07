@@ -12,6 +12,10 @@ class AdInfo extends Model
      */
     protected $table = 'promote_ad_info';
 
+    protected $primaryKey = 'ad_id';
+
+    public $incrementing = true;
+
     /**
      * 不返回的字段。
      *
@@ -22,6 +26,7 @@ class AdInfo extends Model
       'statue',
       'country_code',
       'update_time',
+      'pivot',
     ];
 
     /**

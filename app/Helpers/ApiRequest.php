@@ -90,7 +90,7 @@ class ApiRequest
         $imp_ctries = array_column(Config::get('customer.IMP_CTRY_LIST'), 'iso_code');
         $country_code = $this->getClientCountry() ?
                       $this->getClientCountry()->isoCode : NULL;
-        
+
         return in_array($country_code, $imp_ctries);
     }
 

@@ -12,6 +12,10 @@ class AppAdunitInfo extends Model
      */
     protected $table = 'promote_app_adunit_info';
 
+    protected $primaryKey = 'ad_unit_id';
+
+    public $incrementing = true;
+
     /**
      * 不返回的字段。
      *
@@ -20,6 +24,9 @@ class AppAdunitInfo extends Model
     protected $hidden = [
       'id',
       'update_time',
+      'pivot',
+      'app_name',
+      'desc',
     ];
 
     /**
@@ -27,9 +34,9 @@ class AppAdunitInfo extends Model
      *
      * @return Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function appadunitinfo()
+    public function adinfo()
     {
-        return $this->belongsToMany('App\Models\AdInfo');
+        return $this->belongsToMany('App\Models\AdInfo', 'promote_adunit_adinfo_relation', 'ad_unit_id', 'ad_id');
     }
 
 }
