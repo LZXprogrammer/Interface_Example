@@ -14,7 +14,7 @@ class AdInfo extends Model
 
     protected $primaryKey = 'ad_id';
 
-    public $incrementing = true;
+    public $incrementing = false;
 
     /**
      * 不返回的字段。

@@ -14,7 +14,7 @@ class AppAdunitInfo extends Model
 
     protected $primaryKey = 'ad_unit_id';
 
-    public $incrementing = true;
+    public $incrementing = false;
 
     /**
      * 不返回的字段。
