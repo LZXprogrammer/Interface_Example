@@ -105,3 +105,20 @@
             "country_code": null
         }
         ```
+bestcamera App 请求地址和参数：
+地址： http://s1.picsjoin.com/Ad_Promote/public/getAdinfo?country_code=default
+参数：
+{
+	"package_name":"com.selfiecamera.bestcamera",
+	"status":"1",
+	"ad_units":[
+		{
+			"ad_unit_id":"best1",
+			"max_request_count":"3"
+		},
+		{
+			"ad_unit_id":"best2",
+			"max_request_count":"3"
+		}
+	]
+}

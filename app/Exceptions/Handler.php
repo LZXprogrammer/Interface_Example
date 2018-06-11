@@ -47,10 +47,10 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $e)
     {
         if($e instanceof ApiException) {
-            $result = ApiResponse::responseData([], 0, $e->getMessage());
+            $result = ApiResponse::responseData([], $e->getMessage(), 0);
             return response()->json($result);
         }
-        
+
         return parent::render($request, $e);
     }
 }

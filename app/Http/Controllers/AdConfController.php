@@ -26,16 +26,23 @@ class AdConfController extends Controller
         $request_json = $request->getContent();
         $request_arr  = json_decode($request_json, true);
 
+        // 判断必要参数是否传值
         if( ! array_key_exists('package_name', $request_arr)){
 
             throw new ApiException('package_name is required');
-        } else if( is_null($request_arr['package_name']) ) {
+        } else if( empty($request_arr['package_name']) ) {
 
             throw new ApiException('package_name is required');
+        } else if( ! array_key_exists('ad_units', $request_arr) ) {
+
+            throw new ApiException('ad_units is required');
+        } else if( empty($request_arr['ad_units']) ) {
+
+            throw new ApiException('ad_units is required');
         }
 
+        // 接受传来的参数
         $package_name = $request_arr['package_name'];
-
         $status = $request_arr['status'] ? $request_arr['status'] : 1;
 
         foreach ($request_arr['ad_units'] as $key => $ad_units) {
@@ -44,8 +51,12 @@ class AdConfController extends Controller
             $max_request_count = $ad_units['max_request_count'];
         }
 
+        // 判断传来的参数是否在正确范围内
         if (! $ad_unit_id) {
             throw new ApiException('ad_unit_id is required');
+        }
+        if (empty($max_request_count) || ($max_request_count < 0)) {
+            throw new ApiException('max_request_count is not null or negative');
         }
 
         // 判断是否传来 country_code
@@ -58,28 +69,55 @@ class AdConfController extends Controller
             $country_code = is_null($request->getClientCountry()) ? NULL : $request->getClientCountry()->isoCode;
         }
         // 查询条件构造
-        // $where = [
-        //   'package_name' => $package_name,
-        //   'ad_unit_id' => $ad_unit_id,
-        // ];
+        $where = [
+          'status' => $status,
+          'country_code' => 'default',
+        ];
 
-        // $others = [
-        //   'package_name' => $package_name,
-        //   'country_code' => 'others',
-        // ];
-        // var_dump($request->all());die;
-
-        // with(['adinfo' => function ($query) {
-        //     $query->where('ad_id', '112');
-        // }])
-
+        if($status == 1) {
+            unset($where['status']);
+        }
         // 获取数据
         try {
+            $id_max = [];
+            $app_adunit_infos = [];
 
-            $app_adunit_infos = AppAdunitInfo::where('package_name', $package_name)
-                                ->whereIn('ad_unit_id', $ad_unit_id)
-                                ->with('adinfo')
-                                ->get();
+            foreach ($request_arr['ad_units'] as $key => $value) {
+
+                $id_max[$value['ad_unit_id']] = $value['max_request_count'];
+
+                $app_adunit_info_num = AppAdunitInfo::where('package_name', $package_name)->count();
+
+                if($app_adunit_info_num == 0){
+                    throw new ApiException('package_name is Non-existent');
+                }
+
+                $app_adunit_infos[] = AppAdunitInfo::where('package_name', $package_name)
+                                ->where('ad_unit_id', $value['ad_unit_id'])
+                                ->with(['adinfo' => function ($query) use ($where) {
+                                        $query->where($where)->get();
+                                }])
+                                ->first()->toArray();
+            }
+
+            foreach ($app_adunit_infos as $key => $value) {
+
+                $max_request_count = $id_max[$value['ad_unit_id']];
+
+                $rand_adInfo_num = collect($value['adinfo'])->count();
+
+                $max_request_count = $rand_adInfo_num >= $max_request_count
+                                                      ? $max_request_count
+                                                      : $rand_adInfo_num;
+
+                $rand_adInfo = collect($value['adinfo'])->random($max_request_count);
+
+                if(is_array($rand_adInfo)) {
+                    $rand_adInfo = [$rand_adInfo,];
+                }
+
+                $app_adunit_infos[$key]['adinfo'] = $rand_adInfo;
+            }
 
             // return $app_adunit_infos;
 
@@ -91,13 +129,13 @@ class AdConfController extends Controller
 
             foreach ($app_adunit_infos as $key => $adinfos) {
 
-                foreach ($adinfos->adinfo as $k => $adinfo) {
+                foreach ($adinfos['adinfo'] as $k => $adinfo) {
 
-                    if(strncasecmp($adinfo->iconUrl, 'http://', 7) !== 0 ){
-                        $adinfo->iconUrl = $pre.$adinfo->iconUrl;
-                        $adinfo->imageUrl = $pre.$adinfo->imageUrl;
-                        $adinfo->adImageUrl = $pre.$adinfo->adImageUrl;
-                        $adinfo->bannerImageUrl = $pre.$adinfo->bannerImageUrl;
+                    if(strncasecmp($adinfo['iconUrl'], 'http://', 7) !== 0 ){
+                        $adinfo['iconUrl'] = $pre.$adinfo['iconUrl'];
+                        $adinfo['imageUrl'] = $pre.$adinfo['imageUrl'];
+                        $adinfo['adImageUrl'] = $pre.$adinfo['adImageUrl'];
+                        $adinfo['bannerImageUrl'] = $pre.$adinfo['bannerImageUrl'];
                     }
                 }
             }
