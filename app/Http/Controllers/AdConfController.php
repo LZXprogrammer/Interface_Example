@@ -54,8 +54,8 @@ class AdConfController extends Controller
             if (! $ad_units['ad_unit_id']) {
                 throw new ApiException('ad_unit_id is required');
             }
-            if ($max_request_count < 0 || $max_request_count == '') {
-                throw new ApiException("The max_request_count of '{$ad_units['ad_unit_id']}' in the ad_unit_id is not null or negative");
+            if ($max_request_count < 0 || $max_request_count == '' || ! is_numeric($max_request_count)) {
+                throw new ApiException("The max_request_count of '{$ad_units['ad_unit_id']}' in the ad_unit_id is only be positive, not empty, negative, and other");
             }
         }
 

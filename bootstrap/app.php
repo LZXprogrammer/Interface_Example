@@ -96,7 +96,6 @@ $app->register(App\Providers\FacadesServiceProvider::class);
 
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../routes/routes.php';
-    require __DIR__.'/../routes/photoeditorplus.php';
 });
 
 // config
