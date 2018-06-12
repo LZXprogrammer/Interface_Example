@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS `promote_ad_info`;
 CREATE TABLE `promote_ad_info` (
   `ad_id` char(13) COLLATE utf8_unicode_ci NOT NULL COMMENT '广告唯一ID',
   `statue` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '状态：1 测试 2 上线',
-  `country_code` char(10) COLLATE utf8_unicode_ci NOT NULL COMMENT '国家代码',
+  `country_code` char(10) COLLATE utf8_unicode_ci DEFAULT 'default' COMMENT '国家代码',
   `iconUrl` varchar(1024) COLLATE utf8_unicode_ci NOT NULL COMMENT '图标 URL 地址',
   `imageUrl` varchar(1024) COLLATE utf8_unicode_ci NOT NULL COMMENT '图片 URL 地址',
   `adImageUrl` varchar(1024) COLLATE utf8_unicode_ci NOT NULL COMMENT '1200 * 628 图片资源 url',

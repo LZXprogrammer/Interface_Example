@@ -83,15 +83,27 @@ class AdConfController extends Controller
             $app_adunit_infos = [];
 
             foreach ($request_arr['ad_units'] as $key => $value) {
-
+                // 为下面返随机数做准备
                 $id_max[$value['ad_unit_id']] = $value['max_request_count'];
 
-                $app_adunit_info_num = AppAdunitInfo::where('package_name', $package_name)->count();
+                // 查询传来的包名，数据库中是否存在
+                $app_adunits = AppAdunitInfo::where('package_name', $package_name)->get();
+                if(count($app_adunits) == 0){
+                    throw new ApiException('Package_name is Non-existent');
+                }else{
 
-                if($app_adunit_info_num == 0){
-                    throw new ApiException('package_name is Non-existent');
+                    // 判断此包名下有没有传来的版位
+
+                    foreach ($app_adunits as $key => $app_adunit) {
+                        $ad_unit_ids[] = $app_adunit->ad_unit_id;
+                    }
+                    if(! in_array($value['ad_unit_id'], $ad_unit_ids)){
+                        throw new ApiException("This package_name does not have this '{$value['ad_unit_id']}'");
+                    }
+
                 }
 
+                // 根据传来的参数获取数据
                 $app_adunit_infos[] = AppAdunitInfo::where('package_name', $package_name)
                                 ->where('ad_unit_id', $value['ad_unit_id'])
                                 ->with(['adinfo' => function ($query) use ($where) {
@@ -100,23 +112,27 @@ class AdConfController extends Controller
                                 ->first()->toArray();
             }
 
+            // 根据参数max_request_count 来决定是否随机返回
             foreach ($app_adunit_infos as $key => $value) {
 
                 $max_request_count = $id_max[$value['ad_unit_id']];
 
-                $rand_adInfo_num = collect($value['adinfo'])->count();
+                if ( ! empty($value['adinfo'])) {
+                    $rand_adInfo_num = collect($value['adinfo'])->count();
 
-                $max_request_count = $rand_adInfo_num >= $max_request_count
-                                                      ? $max_request_count
-                                                      : $rand_adInfo_num;
+                    $max_request_count = $rand_adInfo_num >= $max_request_count
+                                                        ? $max_request_count
+                                                        : $rand_adInfo_num;
 
-                $rand_adInfo = collect($value['adinfo'])->random($max_request_count);
+                    $rand_adInfo = collect($value['adinfo'])->random($max_request_count);
 
-                if(is_array($rand_adInfo)) {
-                    $rand_adInfo = [$rand_adInfo,];
+                    if(is_array($rand_adInfo)) {
+                        $rand_adInfo = [$rand_adInfo,];
+                    }
+
+                    $app_adunit_infos[$key]['adinfo'] = $rand_adInfo;
                 }
 
-                $app_adunit_infos[$key]['adinfo'] = $rand_adInfo;
             }
 
             // return $app_adunit_infos;
@@ -125,6 +141,7 @@ class AdConfController extends Controller
                 throw new ApiException('Data is empty');
             }
 
+            // 拼接图片地址
             $pre = $request->getOSSPrefix($country_code);
 
             foreach ($app_adunit_infos as $key => $adinfos) {
@@ -132,10 +149,11 @@ class AdConfController extends Controller
                 foreach ($adinfos['adinfo'] as $k => $adinfo) {
 
                     if(strncasecmp($adinfo['iconUrl'], 'http://', 7) !== 0 ){
-                        $adinfo['iconUrl'] = $pre.$adinfo['iconUrl'];
-                        $adinfo['imageUrl'] = $pre.$adinfo['imageUrl'];
-                        $adinfo['adImageUrl'] = $pre.$adinfo['adImageUrl'];
-                        $adinfo['bannerImageUrl'] = $pre.$adinfo['bannerImageUrl'];
+                        $app_adunit_infos[$key]['adinfo'][$k]['iconUrl'] = $pre.$adinfo['iconUrl'];
+                        $app_adunit_infos[$key]['adinfo'][$k]['imageUrl'] = $pre.$adinfo['imageUrl'];
+                        $app_adunit_infos[$key]['adinfo'][$k]['adImageUrl'] = $pre.$adinfo['adImageUrl'];
+                        $app_adunit_infos[$key]['adinfo'][$k]['bannerImageUrl'] = $pre.$adinfo['bannerImageUrl'];
+
                     }
                 }
             }
