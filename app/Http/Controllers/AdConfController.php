@@ -49,14 +49,14 @@ class AdConfController extends Controller
 
             $ad_unit_id[] = $ad_units['ad_unit_id'];
             $max_request_count = $ad_units['max_request_count'];
-        }
 
-        // 判断传来的参数是否在正确范围内
-        if (! $ad_unit_id) {
-            throw new ApiException('ad_unit_id is required');
-        }
-        if (empty($max_request_count) || ($max_request_count < 0)) {
-            throw new ApiException('max_request_count is not null or negative');
+            // 判断传来的参数是否在正确范围内
+            if (! $ad_units['ad_unit_id']) {
+                throw new ApiException('ad_unit_id is required');
+            }
+            if ($max_request_count < 0 || $max_request_count == '') {
+                throw new ApiException("The max_request_count of '{$ad_units['ad_unit_id']}' in the ad_unit_id is not null or negative");
+            }
         }
 
         // 判断是否传来 country_code
@@ -68,6 +68,7 @@ class AdConfController extends Controller
 
             $country_code = is_null($request->getClientCountry()) ? NULL : $request->getClientCountry()->isoCode;
         }
+
         // 查询条件构造
         $where = [
           'status' => $status,
@@ -77,6 +78,7 @@ class AdConfController extends Controller
         if($status == 1) {
             unset($where['status']);
         }
+
         // 获取数据
         try {
             $id_max = [];
@@ -105,11 +107,11 @@ class AdConfController extends Controller
 
                 // 根据传来的参数获取数据
                 $app_adunit_infos[] = AppAdunitInfo::where('package_name', $package_name)
-                                ->where('ad_unit_id', $value['ad_unit_id'])
-                                ->with(['adinfo' => function ($query) use ($where) {
-                                        $query->where($where)->get();
-                                }])
-                                ->first()->toArray();
+                                    ->where('ad_unit_id', $value['ad_unit_id'])
+                                    ->with(['adinfo' => function ($query) use ($where) {
+                                            $query->where($where)->get();
+                                    }])
+                                    ->first()->toArray();
             }
 
             // 根据参数max_request_count 来决定是否随机返回
@@ -120,19 +122,25 @@ class AdConfController extends Controller
                 if ( ! empty($value['adinfo'])) {
                     $rand_adInfo_num = collect($value['adinfo'])->count();
 
-                    $max_request_count = $rand_adInfo_num >= $max_request_count
+                    if($max_request_count == 0){
+
+                        $app_adunit_infos[$key]['adinfo'] = [];
+                    }else{
+
+                        // 传来的最大请求数量大于数据库查询的数量，全返回，否则，按请求数量随机返回数据
+                        $max_request_count = $rand_adInfo_num >= $max_request_count
                                                         ? $max_request_count
                                                         : $rand_adInfo_num;
 
-                    $rand_adInfo = collect($value['adinfo'])->random($max_request_count);
+                        $rand_adInfo = collect($value['adinfo'])->random($max_request_count);
 
-                    if(is_array($rand_adInfo)) {
-                        $rand_adInfo = [$rand_adInfo,];
+                        if(is_array($rand_adInfo)) {
+                            $rand_adInfo = [$rand_adInfo,];
+                        }
+
+                        $app_adunit_infos[$key]['adinfo'] = is_array($rand_adInfo) ? $rand_adInfo : $rand_adInfo->toArray();
                     }
-
-                    $app_adunit_infos[$key]['adinfo'] = $rand_adInfo;
                 }
-
             }
 
             // return $app_adunit_infos;
@@ -149,11 +157,11 @@ class AdConfController extends Controller
                 foreach ($adinfos['adinfo'] as $k => $adinfo) {
 
                     if(strncasecmp($adinfo['iconUrl'], 'http://', 7) !== 0 ){
+
                         $app_adunit_infos[$key]['adinfo'][$k]['iconUrl'] = $pre.$adinfo['iconUrl'];
                         $app_adunit_infos[$key]['adinfo'][$k]['imageUrl'] = $pre.$adinfo['imageUrl'];
                         $app_adunit_infos[$key]['adinfo'][$k]['adImageUrl'] = $pre.$adinfo['adImageUrl'];
                         $app_adunit_infos[$key]['adinfo'][$k]['bannerImageUrl'] = $pre.$adinfo['bannerImageUrl'];
-
                     }
                 }
             }
