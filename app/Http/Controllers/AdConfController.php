@@ -159,8 +159,11 @@ class AdConfController extends Controller
                     if(strncasecmp($adinfo['iconUrl'], 'http://', 7) !== 0 ){
 
                         $app_adunit_infos[$key]['adinfo'][$k]['iconUrl'] = $pre.$adinfo['iconUrl'];
+                        if(!empty($adinfo['adImageUrl'])){
+
+                            $app_adunit_infos[$key]['adinfo'][$k]['adImageUrl'] = $pre.$adinfo['adImageUrl'];
+                        }
                         $app_adunit_infos[$key]['adinfo'][$k]['imageUrl'] = $pre.$adinfo['imageUrl'];
-                        $app_adunit_infos[$key]['adinfo'][$k]['adImageUrl'] = $pre.$adinfo['adImageUrl'];
                         $app_adunit_infos[$key]['adinfo'][$k]['bannerImageUrl'] = $pre.$adinfo['bannerImageUrl'];
                     }
                 }
