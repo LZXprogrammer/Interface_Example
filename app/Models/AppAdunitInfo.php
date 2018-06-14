@@ -12,8 +12,10 @@ class AppAdunitInfo extends Model
      */
     protected $table = 'promote_app_adunit_info';
 
+    // 自定义主键
     protected $primaryKey = 'ad_unit_id';
 
+    // 去除主键自增属性
     public $incrementing = false;
 
     /**
