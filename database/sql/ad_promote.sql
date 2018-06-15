@@ -35,6 +35,7 @@ CREATE TABLE `promote_ad_info` (
   `sourceType` varchar(40) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'down' COMMENT '资源类型',
   `channelType` tinyint(4) NOT NULL DEFAULT '0' COMMENT '渠道类型 1、2、3、4 ....',
   `targetStartPage` varchar(100) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '包名起始页',
+  `targetPackageName` varchar(100) COLLATE utf8_unicde_ci DEFAULT '' COMMENT '目标包名',
   `update_time` int(10) unsigned NOT NULL COMMENT '最后更新时间',
   PRIMARY KEY (`ad_id`),
   UNIQUE KEY `ad_id` (`ad_id`),
