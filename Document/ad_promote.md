@@ -7,28 +7,26 @@
         country_code : CN、US、IN... (不传按照 IP 获得, 否则按照传入参数进行数据获取)
 
         下面的参数使用 post 方式，在请求主体中传一个 json 格式
-
         ```javascript
-        {
-            "package_name": "test.test",
-            "statue": "1",
-            "ad_units": [
-                {
-                    "ad_unit_id":"123",
-                    "max_request_count":4
+            {
+                "package_name": "test.test",
+                "statue": "1",
+                "ad_units": [
+                    {
+                        "ad_unit_id":"123",
+                        "max_request_count":4
 
-                },
-                {
-                    "ad_unit_id":"456",
-                    "max_request_count":2
+                    },
+                    {
+                        "ad_unit_id":"456",
+                        "max_request_count":2
 
-                }
-            ]
-        }
-        ```
+                    }
+                ]
+            }
+            ```
 
     接口返回 JSON 格式 :
-
         ```javascript
         {
             "status": 1,
